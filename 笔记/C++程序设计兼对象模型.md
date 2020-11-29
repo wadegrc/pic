@@ -398,3 +398,32 @@ for( auto& elem:vec)//引用,对引用的修改会影响原位置的值
 
 
 
+#### 11、reference(引用)
+
+![c++_reference_1](https://github.com/wadegrc/pic/blob/master/%E5%9B%BE%E5%BA%8A/c++_reference_1.png)
+
+```c++
+int x=0;
+int *p = &x;
+int& r = x;//r代表x,现在r,x都是0
+int x2 = 5;
+
+r = x2; //r不能重新代表其他物体，现在r,x都是5
+int &r2 = r;//现在r2是5(r2代表r,也代表x)
+/*Note:特意制造出的假象
+*sizeof(r)==sizeof(x)
+*&x == &r;
+*/
+```
+
+![c++_reference_2](https://github.com/wadegrc/pic/blob/master/%E5%9B%BE%E5%BA%8A/c++_reference_2.png)
+
+```c++
+reference通常用来参数类型和返回类型的描述
+//错误用法:这两行不能并存,same signature(签名相同)
+double imag(const double& im){...}
+double imag(const double im){...}
+//const算不算签名一部分？
+//不算
+```
+
