@@ -1,0 +1,138 @@
+头文件防卫式声明：
+#ifndef __COMPLEX__ //若不存在
+#define __COMPLEX__//定义
+...
+#endif//结束
+一、构造函数
+1、构造函数初始化参数时有两种方式，A(int i_):i(i_)，A(int i_){i=i_}，第一种效率较高，因为是直接初始化为该值
+
+2、函数的名称会包括类型，参数个数和类型，函数名称的编码---函数重载的原理
+
+3、
+complex(double r=0,double i=0):re(r),im(i){}
+complex():re(0),im(0){}
+这两个构造函数不能同时存在，因为编译器不知道调用哪个。
+
+4、构造函数放在private中，不能被调用(单例模式)
+
+二、参数传递与返回值
+
+1、const，不可以改变数据
+double real() const{return re;}
+const complex c1(2,1);
+c1.real();
+若real没有用const修饰，而c1修饰了，则可能会报错。
+
+2、参数传递(值或引用)
+值：整个东西都传过去，存到函数栈中
+引用:相当于传指针。
+所以一般引用快于值
+若不希望函数修改变量，则可以加const关键字来限制，若被修改则会报错。
+
+3、返回值传递(值或引用)
+尽量return引用(不是一定)
+若在函数中定义了局部变量，则不能返回这个变量的引用，因为局部变量会随着函数结束而消亡。
+4、friend(友元)
+自由取得friend的private成员。
+
+5、相同class的各个objects互为friends
+
+int func(const complex& param){ return param.re+param.im;}
+
+三、操作符重载-1,成员函数
+
+inline complex& complex::operator +=(this,const complex& r){return __doapl(this,r);}
+
+c2 +=c1
+
+c2->this（默认，在类中），c1为第二个参数,
+
+四、操作符重载-2，非成员函数
+
+inline complex operator + (const complex& x,const complex& y)//全局函数，没有this指针
+{
+	return complex(real(x)+real(y),imag(x)+imag(y));//返回的是局部变量，不能用引用接收
+	//complex()临时变量
+}
+
+ostream& operator << (ostream& os,const complex& x){//因为有cout<<x<<y的情况，所以返回值不能为void
+	return os<<'('<<x.real()<<','<<x.imag()<<')';
+}
+
+五、Classes的两个经典分类
+带有指针的类和不带指针的类
+
+1、static
+
+静态数据：在内存只有一份
+静态函数：不带this，只能处理静态函数
+
+2、模板
+
+类模板：template<typename T>，类定义时需指定类型
+函数模板:template<class T>，函数调用时会进行参数推导，不用指定类型
+
+3、namespace
+
+namespace std{}
+用法：
+①：using namespace std;
+②：using std::cout
+③：std::cin<<;
+
+六、组合与继承
+
+1、复合（has a）
+A拥有B，A可以使用B的功能
+
+StringRep rep;// 
+
+container->component
+
+构造由内而外，先构造组件在构造自己，析构由外而内，先析构自己，在析构组件
+
+2、委托(delegation)
+
+StringRep* rep;//指针
+
+3、继承(is a)
+
+class A{};
+
+class B:public A{};
+
+构造先构造父类，再构造自己
+
+析构先析构自己，在析构父类(父类的析构函数必须是virtual，否则会出现undefined behavior)
+
+4、虚函数(带有虚函数的继承)
+
+non-virtual函数:你不希望子类重新定义(override)它
+
+virtual函数:你希望子类重新定义它，而且你有默认定义
+
+pure virtual函数:你希望子类一定重新定义它，你对它没有默认定义。
+
+virtual void draw()const =0;->pure virtual
+
+virtual void error(const std::string& msg);->impure virtual
+
+int objectID()const;->non-virtual
+
+5、继承+复合关系下的构造和析构
+
+Base 先Base再 Component再Derived
+  |
+Derived -- Component
+
+Base ---Component 构造顺序 先Compoennt再Base再Derived
+  |
+Derived
+
+七、委托相关设计
+
+1、Composite： 
+
+2、Prototype：创建未来才会出现的子类
+
+ 
