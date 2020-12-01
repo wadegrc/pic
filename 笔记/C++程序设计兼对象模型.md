@@ -427,3 +427,39 @@ double imag(const double im){...}
 //不算
 ```
 
+#### 12、对象模型：关于vptr(虚指针)和vtbl(虚表)
+
+![c++_reference_3](https://github.com/wadegrc/pic/blob/master/%E5%9B%BE%E5%BA%8A/c++_vptr_vtbl.png)
+
+```c++
+class A
+{
+public:
+	virtual void vfunc1();//A::vfunc1
+    virtual void vfunc2();//A::vfunc2
+    void func1();
+    void func2();
+private:
+    int m_data1,m_data2;
+};
+
+class B : public A
+{
+public:
+    virtual void vfunc1();//B::vfunc1
+    void func2();
+private:
+    int m_data3;
+};
+
+class C : public B
+{
+public:
+    virtual void vfunc1();//C::vfunc1
+    void func2();
+private:
+    int m_data1,m_data4;
+}
+/*子类能重写父类的虚函数，*/
+```
+
