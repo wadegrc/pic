@@ -427,7 +427,9 @@ double imag(const double im){...}
 //不算
 ```
 
-#### 12、对象模型：关于vptr(虚指针)和vtbl(虚表)
+#### 12、对象模型：
+
+##### 1、关于vptr(虚指针)和vtbl(虚表)
 
 ![c++_reference_3](https://github.com/wadegrc/pic/blob/master/%E5%9B%BE%E5%BA%8A/c++_vptr_vtbl.png)
 
@@ -446,7 +448,7 @@ private:
 class B : public A
 {
 public:
-    virtual void vfunc1();//B::vfunc1
+    virtual void vfunc1();//B::vfunc1，重写了A::vfunc1
     void func2();
 private:
     int m_data3;
@@ -460,6 +462,126 @@ public:
 private:
     int m_data1,m_data4;
 }
-/*子类能重写父类的虚函数，*/
+/*子类能重写父类的虚函数，
+ * 函数的调用：
+ * 1、静态调用：通过call指令直接调用·
+ * 2、动态调用：满足三个条件，1指针，2向上转型成父类了，3调用的是虚函数
+ * */
 ```
+
+##### 2、关于this
+
+![c++_this_1](https://github.com/wadegrc/pic/blob/master/%E5%9B%BE%E5%BA%8A/c++_this_l.png)
+
+```c++
+//谁调用函数，谁就是该函数的this
+
+```
+
+##### 3、const
+
+![c++_const_1](https://github.com/wadegrc/pic/blob/master/%E5%9B%BE%E5%BA%8A/c++_const_l.png)
+
+```C++
+//const object 只能调用const函数
+//non-const object只能调用non-const函数
+//下面为函数重载,const属于签名
+charT
+    operator[](size_type pos) const
+ {../*不必考虑copy on write*/}
+reference 
+    operator[](size_type pos)
+{..../*必须考虑copy on write*/}
+```
+
+##### 4、关于动态绑定(Dynamic Binding)
+
+![c++_db_1](https://github.com/wadegrc/pic/blob/master/%E5%9B%BE%E5%BA%8A/c++_db_l.png)
+
+````c++
+//a.vfunc1() 通过对象调用的为静态绑定，调用自己的成员函数
+````
+
+![c++_db_2](https://github.com/wadegrc/pic/blob/master/%E5%9B%BE%E5%BA%8A/c++_db_2.png)
+
+```c++
+A* pa = new B //指针强转
+pa->vfunc1() //动态绑定
+
+```
+
+##### 5、重载::operator new,::operator delete ::operator [] new ::operator delete[]
+
+```c++
+void* myAlloc(size_t size)
+{
+	return malloc(size);	
+}
+void myFree(void *ptr)
+{
+    return free(ptr);
+}
+
+//全局
+//他们不可以声明在一个namespace内
+inline void* operator new(size_t size)
+{cout<<"grc global new() \n"; return myAlloc(size);}
+/**/
+inline void* operator new[](size_t size)
+{cout<<"grc global new[]() \n"; return myAlloc(size);}
+
+inline void* operator delete(void *ptr)
+{cout<<"grc global delete() \n"; return myFree(ptr);}
+
+inline void* operator delete[](void *ptr)
+{cout<<"grc global delete[]() \n"; return myFree(ptr);}
+
+//members operator new delete重载
+//与全局差不多
+Foo* pf = ::new Foo;//指定调用全局
+::delete pf;
+```
+
+ ##### 6、重载new() delete()
+
+**实现了在指定内存地址上用指定类型的构造函数来构造一个对象的功能**
+
+```c++
+class Foo
+{
+public:
+    Foo(){cout<<"Foo::Foo()"<<endl;}
+    Foo(int){cout<<"Foo::Foo(int)"<<endl;throw exception;}
+    //(1)这个是一般的operator new()的重载
+    void*  operator new(size_t size)
+    {
+        return malloc(size);
+    }
+    //(2)这个就是标准库已提供的placement new()的重载形式
+    //所以我也模拟standard placement new, 就只是传回Pointer
+    void* operator new(size_t size, void* start)
+    {
+        return start;
+    }
+    //（3）这个才是崭新的placement new
+    void* operator new(size_t size, long extra)
+    {
+        return malloc(size+extra);
+    }
+    //(4)这又是一个placement new
+    void* operator new(size_t size, long extra, char init)
+    {
+        return malloc(size+extra);
+    }
+}
+//我们也可以重载operator delete(),但它们绝对不会被delete调用，只有当ctor抛出exception
+//才会调用(对应的)operator delete()。主要用来归还完全创建成功的object所占用的memory
+Foo* p1 = new Foo;
+Foo*p2 = new(&start)Foo;
+Foo*p3= new(100)Foo;
+Foo*p4=new(100)Foo(1);//调用对应构造函数
+
+```
+
+
 
